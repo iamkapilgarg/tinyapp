@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/kapildoppiogroup/tinyapp/issues"
   },
-  "homepage": "https://github.com/kapildoppiogroup/tinyapp#readme"
+  "homepage": "https://github.com/kapildoppiogroup/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
