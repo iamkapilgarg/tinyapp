@@ -18,6 +18,10 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars); //EJS will automatically search this file in views folder.
 });
 
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars); //EJS will automatically search this file in views folder.
