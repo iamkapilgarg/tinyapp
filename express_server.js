@@ -34,16 +34,16 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   let randomCharacters = generateRandomString();
   urlDatabase[randomCharacters] = req.body.longURL;
-  console.log(urlDatabase);
-  res.send("Ok");
+  res.redirect("/urls/" + randomCharacters);
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
 });
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.listen(PORT, () => {
