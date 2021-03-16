@@ -5,7 +5,7 @@ const PORT = 8080; // default port 8080
 
 /*The body-parser library will convert the request body from a Buffer into string that we can read.
 It will then add the data to the req(request) object under the key body*/
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 const urlDatabase = {
@@ -18,7 +18,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase};
+  const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars); //EJS will automatically search this file in views folder.
 });
 
@@ -44,6 +44,11 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls");
+});
+
+app.post("/urls/:shortURL", (req, res) => {
+  urlDatabase[req.params.shortURL] = req.body.longURL;
   res.redirect("/urls");
 });
 
