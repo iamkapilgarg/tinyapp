@@ -1,7 +1,11 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const app = express();
 const PORT = 8080; // default port 8080
 
+/*The body-parser library will convert the request body from a Buffer into string that we can read.
+It will then add the data to the req(request) object under the key body*/
+app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
 const urlDatabase = {
@@ -27,6 +31,13 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars); //EJS will automatically search this file in views folder.
 });
 
+app.post("/urls", (req, res) => {
+  let randomCharacters = generateRandomString();
+  urlDatabase[randomCharacters] = req.body.longURL;
+  console.log(urlDatabase);
+  res.send("Ok");
+});
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
@@ -38,3 +49,14 @@ app.get("/hello", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+const generateRandomString = function() {
+  let result = '';
+  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < 6; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+};
+
+console.log(generateRandomString());
