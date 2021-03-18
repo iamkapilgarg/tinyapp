@@ -26,17 +26,22 @@ const users = {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  let cookiesUserId = req.cookies["user_id"];
+  if (cookiesUserId && users[cookiesUserId]) {
+    res.redirect("/urls");
+    return;
+  }
+  res.render("login");
 });
 
 app.get("/urls", (req, res) => {
   let cookiesUserId = req.cookies["user_id"];
   if (cookiesUserId && users[cookiesUserId]) {
-    const templateVars = { urls: urlDatabase, username: users[cookiesUserId].email };
+    const templateVars = { urls: urlsForUser(cookiesUserId), username: users[cookiesUserId].email };
     res.render("urls_index", templateVars);
     return;
   }
-  res.render("login", { username: "" });
+  res.render("login");
 });
 
 app.get("/urls/new", (req, res) => {
@@ -46,11 +51,15 @@ app.get("/urls/new", (req, res) => {
     res.render("urls_new", templateVars);
     return;
   }
-  res.render("login", { username: "" });
+  res.render("login");
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, username: users[req.cookies["user_id"]].email };
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL].longURL,
+    username: users[req.cookies["user_id"]].email
+  };
   res.render("urls_show", templateVars);
 });
 
@@ -69,13 +78,21 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  if (checkURL(req.cookies["user_id"])) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+    return;
+  }
+  res.status(403).send("Not Authorized");
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-  res.redirect("/urls");
+  if (checkURL(req.cookies["user_id"])) {
+    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+    res.redirect("/urls");
+    return;
+  }
+  res.status(403).send("Not Authorized");
 });
 
 app.post("/login", (req, res) => {
@@ -92,7 +109,7 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.render("login", { username: "" });
+  res.render("login");
 });
 
 app.post("/logout", (req, res) => {
@@ -101,7 +118,7 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.render("registration", { username: "" });
+  res.render("registration");
 });
 
 app.post("/register", (req, res) => {
@@ -126,7 +143,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-const emailExists = function (email) {
+const emailExists = function(email) {
   for (let key in users) {
     console.log(users[key].email);
     if (users[key].email === email) {
@@ -136,7 +153,7 @@ const emailExists = function (email) {
   return false;
 };
 
-const matchEmailPassword = function (email, password) {
+const matchEmailPassword = function(email, password) {
   for (let key in users) {
     if (users[key].email === email && users[key].password === password) {
       return true;
@@ -145,7 +162,7 @@ const matchEmailPassword = function (email, password) {
   return false;
 };
 
-const getKey = function (email) {
+const getKey = function(email) {
   for (let key in users) {
     if (users[key].email === email) {
       return key;
@@ -153,7 +170,7 @@ const getKey = function (email) {
   }
 };
 
-const generateRandomString = function (length) {
+const generateRandomString = function(length) {
   let result = '';
   let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < length; i++) {
@@ -161,3 +178,23 @@ const generateRandomString = function (length) {
   }
   return result;
 };
+
+const urlsForUser = function(id) {
+  let result = {};
+  for (let key in urlDatabase) {
+    if (urlDatabase[key].userID === id) {
+      result[key] = urlDatabase[key];
+    }
+  }
+  console.log("result" , JSON.stringify(result));
+  return result;
+};
+
+const checkURL = function(id) {
+  for (let key in urlDatabase) {
+    if (urlDatabase[key].userID === id) {
+      return true;
+    }
+  }
+  return false;
+}

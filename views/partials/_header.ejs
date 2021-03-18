@@ -11,7 +11,7 @@
       </div>
     </div>
     <div class="navbar-nav"></div>
-    <% if(username === "") { %>
+    <% if(typeof username === 'undefined') { %>
         <a class="nav-item nav-link" href="/login">Login</a>
         <a class="nav-item nav-link" href="/register">Register</a>
       <% }else { %>
