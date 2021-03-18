@@ -2,6 +2,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
+const bcrypt = require('bcrypt');
+
+
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -131,7 +134,7 @@ app.post("/register", (req, res) => {
     let user = {
       'id': id,
       'email': req.body.email,
-      'password': req.body.password
+      'password': bcrypt.hashSync(req.body.password, 10)
     };
     users[id] = user;
     res.cookie("user_id", id);
@@ -154,8 +157,9 @@ const emailExists = function(email) {
 };
 
 const matchEmailPassword = function(email, password) {
+  console.log(JSON.stringify(users));
   for (let key in users) {
-    if (users[key].email === email && users[key].password === password) {
+    if (users[key].email === email && bcrypt.compareSync(password, users[key].password)) {
       return true;
     }
   }
@@ -197,4 +201,4 @@ const checkURL = function(id) {
     }
   }
   return false;
-}
+};
