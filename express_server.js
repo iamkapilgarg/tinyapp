@@ -13,41 +13,58 @@ app.use(morgan('tiny'));
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
 
-const users = {};
+const users = {
+  aJ48lW: {
+    id: "aJ48lW",
+    email: "iamkapilgarg@gmail.com",
+    password: "qwerty"
+  }
+};
 
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
 app.get("/urls", (req, res) => {
-  console.log(JSON.stringify(users));
-  const templateVars = { urls: urlDatabase,  username: users[req.cookies["user_id"]].email };
-  res.render("urls_index", templateVars); //EJS will automatically search this file in views folder.
+  let cookiesUserId = req.cookies["user_id"];
+  if (cookiesUserId && users[cookiesUserId]) {
+    const templateVars = { urls: urlDatabase, username: users[cookiesUserId].email };
+    res.render("urls_index", templateVars);
+    return;
+  }
+  res.render("login", { username: "" });
 });
 
 app.get("/urls/new", (req, res) => {
-  console.log(JSON.stringify(users));
-  const templateVars = {username: users[req.cookies["user_id"]].email};
-  res.render("urls_new", templateVars);
+  let cookiesUserId = req.cookies["user_id"];
+  if (cookiesUserId && users[cookiesUserId]) {
+    const templateVars = { username: users[cookiesUserId].email };
+    res.render("urls_new", templateVars);
+    return;
+  }
+  res.render("login", { username: "" });
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: users[req.cookies["user_id"]].email};
-  res.render("urls_show", templateVars); //EJS will automatically search this file in views folder.
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, username: users[req.cookies["user_id"]].email };
+  res.render("urls_show", templateVars);
 });
 
 app.post("/urls", (req, res) => {
   let randomCharacters = generateRandomString(6);
-  urlDatabase[randomCharacters] = req.body.longURL;
+  urlDatabase[randomCharacters] = {
+    longURL: req.body.longURL,
+    userID: req.cookies["user_id"]
+  };
   res.redirect("/urls/" + randomCharacters);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
@@ -57,13 +74,11 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  console.log("kapil", req.params.shortURL);
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
 app.post("/login", (req, res) => {
-  console.log(users);
   if (!emailExists(req.body.email)) {
     res.status(403).send("user does not exist");
     return;
@@ -77,7 +92,7 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.render("login", {username:""});
+  res.render("login", { username: "" });
 });
 
 app.post("/logout", (req, res) => {
@@ -86,7 +101,7 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.render("registration",{username:""});
+  res.render("registration", { username: "" });
 });
 
 app.post("/register", (req, res) => {
@@ -96,27 +111,24 @@ app.post("/register", (req, res) => {
   } else if (emailExists(req.body.email)) {
     res.status(400).send('Email already exists');
   } else {
-    let user = {'id': id,
+    let user = {
+      'id': id,
       'email': req.body.email,
       'password': req.body.password
     };
     users[id] = user;
-    console.log(users);
     res.cookie("user_id", id);
     res.redirect("/urls");
   }
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
 });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-const emailExists = function(email) {
+const emailExists = function (email) {
   for (let key in users) {
+    console.log(users[key].email);
     if (users[key].email === email) {
       return true;
     }
@@ -124,7 +136,7 @@ const emailExists = function(email) {
   return false;
 };
 
-const matchEmailPassword = function(email, password) {
+const matchEmailPassword = function (email, password) {
   for (let key in users) {
     if (users[key].email === email && users[key].password === password) {
       return true;
@@ -133,7 +145,7 @@ const matchEmailPassword = function(email, password) {
   return false;
 };
 
-const getKey = function(email) {
+const getKey = function (email) {
   for (let key in users) {
     if (users[key].email === email) {
       return key;
@@ -141,7 +153,7 @@ const getKey = function(email) {
   }
 };
 
-const generateRandomString = function(length) {
+const generateRandomString = function (length) {
   let result = '';
   let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < length; i++) {
