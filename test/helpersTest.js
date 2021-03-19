@@ -74,7 +74,7 @@ describe('getUrlsByUser', function() {
 
 describe('isURLExist', function() {
   it('should return true if URL exists', function() {
-    const result = isURLExistForUserID('userRandomID', testURLs);
+    const result = isURLExistForUserID('userRandomID', testURLs, 'abcdef');
     assert.equal(true, result);
   });
 
