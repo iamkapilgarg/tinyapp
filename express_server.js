@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const methodOverride = require('method-override');
 const helper = require('./helpers');
 const errorMessages = require('./constants');
 
@@ -17,6 +18,15 @@ app.use(morgan('tiny'));
 app.use(cookieSession({
   name: 'session',
   keys: ['abcd', 'efgh'],
+}));
+app.use(methodOverride(function(req, res) {
+  console.log(req.query);
+  if (req.query && typeof req.query === 'object' && '_method' in req.query) {
+    let method = req.query._method;
+    delete req.query._method;
+    console.log(method);
+    return method;
+  }
 }));
 
 const urlDatabase = {};
@@ -127,7 +137,7 @@ app.post('/urls', (req, res) => {
 
 
 /** Route to Delete a URL from the list */
-app.post('/urls/:shortURL/delete', (req, res) => {
+app.delete('/urls/:shortURL', (req, res) => {
   let shortURL = req.params.shortURL;
   // delete only those URLs which belong to the the current user
   if (helper.isURLExistForUserID(req.session.userId, urlDatabase, shortURL)) {
@@ -141,7 +151,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 
 
 /** Route to update the URL.*/
-app.post('/urls/:shortURL', (req, res) => {
+app.put('/urls/:shortURL', (req, res) => {
   let shortURL = req.params.shortURL;
   // a user can only update its own URLs, not anyone else's
   if (helper.isURLExistForUserID(req.session.userId, urlDatabase, shortURL)) {
