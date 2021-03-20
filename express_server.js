@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
     res.redirect('/urls');
     return;
   }
-  res.render('login');
+  res.redirect('/login');
 });
 
 
@@ -49,7 +49,7 @@ app.get('/urls', (req, res) => {
     return;
   }
 
-  res.render('login');
+  res.redirect('/login');
 });
 
 
@@ -65,24 +65,31 @@ app.get('/urls/new', (req, res) => {
     return;
   }
 
-  res.render('login');
+  res.redirect('/login');
 });
 
 
 
 /** Route to display short URL page */
 app.get('/urls/:shortURL', (req, res) => {
-  if (urlDatabase[req.params.shortURL]) {
-    const templateVars = {
-      shortURL: req.params.shortURL,
-      longURL: urlDatabase[req.params.shortURL].longURL,
-      username: users[req.session.userId].email
-    };
-    res.render('urls_show', templateVars);
+  let cookiesUserId = req.session.userId;
+  let shortURL = req.params.shortURL;
+  if (cookiesUserId && users[cookiesUserId]) {
+    if (urlDatabase[shortURL]) {
+      const templateVars = {
+        longURL: urlDatabase[shortURL].longURL,
+        username: users[cookiesUserId].email,
+        shortURL
+      };
+      res.render('urls_show', templateVars);
+      return;
+    }
+    res.status(404);
+    res.render('error', {errorMessage: errorMessages.ERROR_404});
     return;
   }
-  res.status(404);
-  res.render('error', {errorMessage: errorMessages.ERROR_404});
+  res.status(403);
+  res.render('error', {errorMessage: errorMessages.NOT_AUTHORIZED});
 });
 
 
