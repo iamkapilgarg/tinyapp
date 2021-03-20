@@ -18,7 +18,7 @@ const testUsers = {
 const testURLs = {
   'abcdef':{
     longURL: 'https://lighthouselabs.ca',
-    userID: 'userRandomID'
+    userID: 'userRandomID',
   },
   'pqrxyz':{
     longURL: 'https://google.ca',
