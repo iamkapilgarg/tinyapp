@@ -74,18 +74,13 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   let cookiesUserId = req.session.userId;
   let shortURL = req.params.shortURL;
-  if (cookiesUserId && users[cookiesUserId]) {
-    if (urlDatabase[shortURL]) {
-      const templateVars = {
-        longURL: urlDatabase[shortURL].longURL,
-        username: users[cookiesUserId].email,
-        shortURL
-      };
-      res.render('urls_show', templateVars);
-      return;
-    }
-    res.status(404);
-    res.render('error', {errorMessage: errorMessages.ERROR_404});
+  if (cookiesUserId && users[cookiesUserId] && urlDatabase[shortURL] && urlDatabase[shortURL].userID === cookiesUserId) {
+    const templateVars = {
+      longURL: urlDatabase[shortURL].longURL,
+      username: users[cookiesUserId].email,
+      shortURL
+    };
+    res.render('urls_show', templateVars);
     return;
   }
   res.status(403);
